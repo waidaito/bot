@@ -7,7 +7,6 @@ import json
 import asyncio
 from datetime import timedelta
 
-# Flask server configuration to keep the bot alive on Render
 app = Flask('')
 
 @app.route('/')
@@ -176,7 +175,7 @@ async def menu(ctx):
     )
     embed.add_field(
         name="Moderation",
-        value="!ban\n!unban\n!kick\n!mute\n!unmute\n!clear\n!warn\n!warnings\n!nick\n!role\n!removerole",
+        value="!ban\n!unban\n!kick\n!mute\n!unmute\n!clear\n!warn\n!warnings\n!nick\n!role\n!removerole\n!nuke",
         inline=False
     )
     embed.add_field(
@@ -191,7 +190,7 @@ async def menu(ctx):
     )
     embed.add_field(
         name="Other",
-        value="!announce\n!say\n!avatar\n!userinfo\n!serverinfo\n!ping\n!list-admin\n!list-server\n!id",
+        value="!announce\n!say\n!poll\n!avatar\n!userinfo\n!serverinfo\n!ping\n!list-admin\n!list-server\n!id",
         inline=False
     )
     await ctx.send(embed=embed)
@@ -351,7 +350,27 @@ async def warn(ctx, member: discord.Member):
     warnings[user_id] += 1
     data["warnings"] = warnings
     save_data(data)
+    
     await ctx.send(f"{member.mention} has been warned. Total warnings: {warnings[user_id]}.")
+    
+    if warnings[user_id] == 3:
+        try:
+            await member.timeout_for(timedelta(hours=1))
+            await ctx.send(f"{member.mention} has been automatically muted for 1 hour (3 warnings).")
+        except:
+            pass
+    elif warnings[user_id] == 5:
+        try:
+            await member.timeout_for(timedelta(hours=4))
+            await ctx.send(f"{member.mention} has been automatically muted for 4 hours (5 warnings).")
+        except:
+            pass
+    elif warnings[user_id] == 10:
+        try:
+            await member.timeout_for(timedelta(days=1))
+            await ctx.send(f"{member.mention} has been automatically muted for 1 day (10 warnings).")
+        except:
+            pass
 
 @bot.command()
 async def warnings(ctx, member: discord.Member):
@@ -426,8 +445,37 @@ async def say(ctx, *, text):
 async def announce(ctx, *, text):
     if not is_admin(ctx.author):
         return
+    try:
+        await ctx.message.delete()
+    except:
+        pass
     embed = discord.Embed(title="Announcement", description=text, color=0x2f3136)
     await ctx.send(embed=embed)
+
+@bot.command()
+async def nuke(ctx, channel: discord.TextChannel):
+    if not is_admin(ctx.author):
+        return
+    try:
+        new_channel = await channel.clone(reason="Nuke channel execution")
+        await new_channel.edit(position=channel.position)
+        await channel.delete()
+        await new_channel.send("This channel has been nuked and recreated!")
+    except Exception as e:
+        await ctx.send(f"Failed to nuke channel: {e}")
+
+@bot.command()
+async def poll(ctx, question, choice1, choice2):
+    try:
+        await ctx.message.delete()
+    except:
+        pass
+    embed = discord.Embed(title="Poll / Voting", description=question, color=0x2f3136)
+    embed.add_field(name="Choice 1", value=f"1️⃣ {choice1}", inline=False)
+    embed.add_field(name="Choice 2", value=f"2️⃣ {choice2}", inline=False)
+    msg = await ctx.send(embed=embed)
+    await msg.add_reaction("1️⃣")
+    await msg.add_reaction("2️⃣")
 
 @bot.command()
 async def avatar(ctx, member: discord.Member = None):
@@ -545,4 +593,3 @@ async def get_id(ctx, member: discord.Member = None):
 keep_alive()
 
 bot.run(os.getenv("TOKEN"))
-
