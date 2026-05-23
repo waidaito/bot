@@ -166,7 +166,6 @@ async def on_message_delete(message):
     if message.author.bot:
         return
     sniped_message = (message.content, message.author)
-
 @bot.command()
 async def menu(ctx):
     embed = discord.Embed(
@@ -226,6 +225,10 @@ async def ban(ctx, member: discord.Member):
         await ctx.send("Error: I lack system permissions to execute this command. Please grant Ban Members or Administrator permissions to my role.")
         return
         
+    if ctx.author.id != OWNER_ID and ctx.author.top_role <= member.top_role:
+        await ctx.send(f"Error: Cannot ban {member.name}. Your highest role is lower than or equal to this user's highest role.")
+        return
+
     if ctx.guild.me.top_role <= member.top_role:
         await ctx.send(f"Error: Cannot ban {member.name}. My highest role is lower than or equal to this user's highest role.")
         return
@@ -261,6 +264,10 @@ async def kick(ctx, member: discord.Member):
         await ctx.send("Error: I lack system permissions to execute this command. Please grant Kick Members or Administrator permissions.")
         return
         
+    if ctx.author.id != OWNER_ID and ctx.author.top_role <= member.top_role:
+        await ctx.send(f"Error: Cannot kick {member.name}. Your highest role is lower than or equal to this user's highest role.")
+        return
+
     if ctx.guild.me.top_role <= member.top_role:
         await ctx.send(f"Error: Cannot kick {member.name}. My highest role is lower than or equal to this user's highest role.")
         return
@@ -280,6 +287,10 @@ async def mute(ctx, member: discord.Member, time):
         await ctx.send("Error: I lack system permissions. Please grant Moderate Members or Administrator permissions.")
         return
         
+    if ctx.author.id != OWNER_ID and ctx.author.top_role <= member.top_role:
+        await ctx.send(f"Error: Cannot mute {member.name}. Your highest role is lower than or equal to this user's highest role.")
+        return
+
     if ctx.guild.me.top_role <= member.top_role:
         await ctx.send(f"Error: Cannot mute {member.name}. My highest role is lower than or equal to this user's highest role.")
         return
@@ -319,6 +330,10 @@ async def unmute(ctx, member: discord.Member):
         await ctx.send("Error: I lack system permissions. Please grant Moderate Members to lift timeouts.")
         return
         
+    if ctx.author.id != OWNER_ID and ctx.author.top_role <= member.top_role:
+        await ctx.send(f"Error: Failed to unmute. Your role is lower than or equal to {member.name}.")
+        return
+
     if ctx.guild.me.top_role <= member.top_role:
         await ctx.send(f"Error: Failed to unmute. My role is lower than or equal to {member.name}.")
         return
@@ -392,6 +407,11 @@ async def nick(ctx, member: discord.Member, *, name):
 async def role(ctx, member: discord.Member, *, role: discord.Role):
     if not is_admin(ctx.author):
         return
+        
+    if ctx.author.id != OWNER_ID and ctx.author.top_role <= member.top_role:
+        await ctx.send("Failed to update role. Your highest role must be higher than the target user's highest role.")
+        return
+
     try:
         await member.add_roles(role)
         await ctx.send(f"Added role {role.name} to {member.mention}.")
@@ -403,6 +423,11 @@ async def role(ctx, member: discord.Member, *, role: discord.Role):
 async def removerole(ctx, member: discord.Member, *, role: discord.Role):
     if not is_admin(ctx.author):
         return
+        
+    if ctx.author.id != OWNER_ID and ctx.author.top_role <= member.top_role:
+        await ctx.send("Failed to update role. Your highest role must be higher than the target user's highest role.")
+        return
+
     try:
         await member.remove_roles(role)
         await ctx.send(f"Removed role {role.name} from {member.mention}.")
@@ -623,4 +648,4 @@ async def raid(ctx):
 keep_alive()
 
 bot.run(os.getenv("TOKEN"))
-    
+        
