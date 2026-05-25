@@ -64,7 +64,7 @@ anti_spam = data["anti_spam"]
 
 sniped_message = None
 spam_tracker = {}
-bad_words = ["ngu", "cl", "cc"]
+bad_words = [".", ".", "."]
 
 @bot.event
 async def on_ready():
